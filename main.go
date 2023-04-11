@@ -100,6 +100,12 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	secureKey = os.Getenv("SECURE_KEY")
+	port := os.Getenv("PORT")
+	envs := os.Environ()
+	for _, val := range envs {
+		fmt.Println(val)
+	}
+
 	fmt.Println("start process")
 
 	logFile, err := os.OpenFile("out.log", os.O_APPEND|os.O_CREATE, os.ModePerm)
@@ -109,5 +115,5 @@ func main() {
 
 	log.SetOutput(logFile)
 	http.HandleFunc("/", indexHandler)
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }

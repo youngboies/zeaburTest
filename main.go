@@ -32,8 +32,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	uu := u.String()
+	w.Header().Set("X-Request-Id", uu)
+	log.Println(uu, r.RequestURI, "start")
 
-	log.Println(uu, r.URL.RawFragment)
 	args := r.URL.Query()
 	cmd := args.Get("cmd")
 	if len(secureKey) > 0 {

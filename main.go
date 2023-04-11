@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -23,7 +24,7 @@ var (
 )
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-
+	fmt.Println("index handler")
 	u, err := uuid.NewRandom()
 	if err != nil {
 		log.Println("uuid create failed", err)
@@ -99,6 +100,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	secureKey = os.Getenv("SECURE_KEY")
+	fmt.Println("start process")
 
 	logFile, err := os.OpenFile("out.log", os.O_APPEND|os.O_CREATE, os.ModePerm)
 	if err != nil {

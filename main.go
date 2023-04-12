@@ -2,7 +2,6 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"crypto/md5"
 	"encoding/hex"
@@ -73,27 +72,51 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3600)
-	command := exec.CommandContext(ctx, "bash", strings.Split(cmd, " ")...)
+	command := exec.CommandContext(ctx, "/bin/bash", []string{"-c", cmds}...)
 	out, err := command.StdoutPipe()
 	if err != nil {
+		log.Println(uu, "command out pip failed", err)
 		w.Header().Set("X-Err", "command out pip failed")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	reader := bufio.NewReaderSize(out, 4096)
+	command.Stderr = os.Stdout
+	defer out.Close()
+
+	err = command.Start()
+	if err != nil {
+		log.Println(uu, "command run failed", err)
+		w.Header().Set("X-Err", "command run failed")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	sent := int64(0)
+	buf := make([]byte, 4096)
 	for {
-		N, err := io.Copy(w, reader)
+		N, err := out.Read(buf)
 		if err != nil {
-			if err != io.EOF && err != io.ErrClosedPipe {
-				log.Println(uu, "copy exec outbuff failed", err)
+			if err != io.EOF {
+				log.Println(uu, "command read failed", err)
 			}
-			cancel()
+
 			break
 		}
+
 		sent += N
+
+		N, err = w.Write(buf[:N])
+		if err != nil {
+			if err != io.EOF {
+				log.Println(uu, "http write failed", err)
+			}
+
+			break
+		}
 	}
+
+	command.Wait()
 
 	log.Println(uu, "request over, size:", sent)
 }

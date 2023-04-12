@@ -112,6 +112,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 				log.Println(uu, "http write failed", err)
 			}
 
+			cancel()
 			break
 		}
 	}

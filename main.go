@@ -12,7 +12,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -72,7 +71,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3600)
-	command := exec.CommandContext(ctx, "/bin/bash", []string{"-c", cmds}...)
+	command := exec.CommandContext(ctx, "/bin/bash", []string{"-c", cmd}...)
 	out, err := command.StdoutPipe()
 	if err != nil {
 		log.Println(uu, "command out pip failed", err)
@@ -104,7 +103,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		sent += N
+		sent += int64(N)
 
 		N, err = w.Write(buf[:N])
 		if err != nil {
